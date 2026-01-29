@@ -121,8 +121,8 @@ int main(int ac, char **av) {
 	if (sockfd < 0)
 		fatal_error();
 
-  // 12. Anadimos un memset
-	memset(&servaddr, 0, sizeof(servaddr));
+  // 12. Dejamos el bzero tal como esta
+	bzero(&servaddr, sizeof(servaddr));
 
   // 13. Cambiamos el 8081 por el av1
 	servaddr.sin_family = AF_INET;
