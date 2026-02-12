@@ -77,7 +77,8 @@ void notify_all(int author, char *msg) {
 
 // 7. Register, remove, y send; Implementamos para usarlas abajo
 void register_cli(int fd) {
-	max_fd = fd > max_fd ? fd : max_fd;
+	if (fd > max_fd)
+		max_fd = fd;
 	ids[fd] = count++;
 	messages[fd] = NULL;
 	FD_SET(fd, &afds);
