@@ -108,9 +108,9 @@ int main(int ac, char **av) {
 
   	FD_ZERO(&activefds);
 	FD_SET(sockfd, &activefds);
-	
-	memset(ids, 0, sizeof(ids));
-	memset(buffers, 0, sizeof(buffers));
+
+	bzero(ids, sizeof(ids));
+	bzero(buffers, sizeof(buffers));
 
 	while (1) {
 		readfds = writefds = activefds;
