@@ -131,43 +131,39 @@ int main(int ac, char** av) {
 			}
 			else // OLD CLIENT :)
 			{
-				int recived = recv(fd, read_buf, 1000, 0);
-				if(recived <= 0) // CLIENT LEAVE
+				int recived = recv(fd, read_buf, 1000, 0); // sirve para ver que ha enviado
+				if(recived <= 0) // CLIENT LEAVE: si es 0 o inferior
 				{
-					char msg[256];
+					char msg[256]; // set de la variable, sprintf para escribirlo, y notify
 					sprintf(msg, "server: client %d just left\n", ids[fd]);
 					notify(fd, msg);
-					FD_CLR(fd, &a);
+					FD_CLR(fd, &a); // quitamos el fd de &a, hacemos free del buffer fd, y close de fd tambien.
 					free(buffer[fd]);
 					close(fd);
 				}
-				else // SEND MSG!
+				else
 				{
-					read_buf[recived] = '\0';
-					buffer[fd] = str_join(buffer[fd], read_buf);
-					if(!buffer[fd])
-						fatal();
-					char *msg;
-					while(extract_message(&buffer[fd], &msg))
-					{
-						char prefix[50];
-						sprintf(prefix, "client %d: ", ids[fd]);
+    				read_buf[recived] = '\0'; // nullterminamos el mensaje
 
-						char *full = malloc(strlen(prefix) + strlen(msg) + 1);
-						if (!full)
-							fatal();
-						full[0] = 0; // INICIALIZAR
-						strcat(full, prefix);
-						strcat(full, msg);
+    				if (!(buffer[fd] = str_join(buffer[fd], read_buf))) // guardamos el mensaje, y comprobamos el malloc
+        				fatal();
 
-						notify(fd, full);
-						free(full);
-						free(msg);
-					}
-				}
-							
+    				char *msg; // inicializamos el msg
+    				while (extract_message(&buffer[fd], &msg)) // extraemos el msg
+    				{
+        				char *full = malloc(strlen(msg) + 50); // creamos y comprobamos full
+        				if (!full)
+            				fatal();
+
+        				sprintf(full, "client %d: %s", ids[fd], msg); // preparamos y enviamos el msg
+        				notify(fd, full);
+
+        				free(full); // free a full y msg
+        				free(msg);
+    				}
+				}				
 			}
 		}		
 	}
-	return(1);
+	return(1); // importante!
 }
