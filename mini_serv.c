@@ -4,9 +4,12 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <stdio.h>
+
+/* ADD THIS IMPORTS */
+#include <stdio.h> 
 #include <stdlib.h>
 
+/* CREATE VARIABLES */
 fd_set a, r, w;
 int max = 0, next = 0, ids[65536];
 char *buffer[65536], read_buf[1001];
@@ -75,14 +78,16 @@ char *str_join(char *buf, char *add)
 int main(int ac, char** av) {
 	if(ac != 2)
 		return(write(2, "Wrong number of arguments\n", 26), 1);
-
+	
+	/* ELIMINATE LEN AND CLI */
 	int sockfd, cfd;
 	struct sockaddr_in servaddr; 
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0); 
 	if (sockfd == -1)
 		fatal();
-	
+
+	/* IGUALATE MAX TO SOCKFD */
 	max = sockfd;
 	bzero(&servaddr, sizeof(servaddr)); 
 
@@ -94,7 +99,8 @@ int main(int ac, char** av) {
 		fatal(); 
 	if (listen(sockfd, 10) != 0)
 		fatal();
-	
+
+	/* &A TO ZERO, SET IT AT SOCKFD, AND BZERO THE ARRAYS */
 	FD_ZERO(&a);
 	FD_SET(sockfd, &a);
 	bzero(buffer, sizeof(buffer));
@@ -111,17 +117,17 @@ int main(int ac, char** av) {
 				
 			if(fd == sockfd) // NEW CONNECTION
 			{
-				cfd = accept(sockfd, NULL, NULL);
-				if(cfd < 0)
+				cfd = accept(sockfd, NULL, NULL); // SOLO SOCKFD. SI NO FUNCIONA NULL PONEMOS 0
+				if(cfd < 0) // SI ES MENOR A 0 HUBO UN ERROR Y LO SALTAMOS
 					continue;
-				if(cfd > max)
+				if(cfd > max) // ACTUALIZAMOS EL MAX EN CASO DE SER MAS GRANDE
 					max = cfd;
-				ids[cfd] = next++;
-				buffer[cfd] = NULL;
-				FD_SET(cfd, &a);
-				char msg[256];
+				ids[cfd] = next++; // GUARDAR EL CFD EN IDS
+				buffer[cfd] = NULL; // LIMPIAMOS SU BUFFER
+				FD_SET(cfd, &a); // GUARDAMOS EL FD EN ACTIVOS
+				char msg[256]; // CREAMOS VARIABLE PARA GUARDAR EL MENSAJE DE BIENVENIDA
 				sprintf(msg, "server: client %d just arrived\n", ids[cfd]);
-				notify(cfd, msg);
+				notify(cfd, msg); // ENVIAMOS EL MENSAJE
 			}
 			else // OLD CLIENT :)
 			{
