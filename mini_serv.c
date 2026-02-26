@@ -105,6 +105,7 @@ int main(int ac, char** av) {
 	FD_SET(sockfd, &a);
 	bzero(buffer, sizeof(buffer));
 	bzero(ids, sizeof(ids));
+	
 	while(1){
 		r = w = a;
 		if(select(max + 1,  &r, &w, NULL, NULL) < 0)
@@ -113,21 +114,22 @@ int main(int ac, char** av) {
 		for(int fd = 0; fd <= max; fd++)
 		{
 			if(!FD_ISSET(fd, &r))
-				continue;
+				continue; // miramos si fd esta set en r. en caso negativo, next
 				
-			if(fd == sockfd) // NEW CONNECTION
+			if (fd == sockfd) // nueva conexion
 			{
-				cfd = accept(sockfd, NULL, NULL); // SOLO SOCKFD. SI NO FUNCIONA NULL PONEMOS 0
-				if(cfd < 0) // SI ES MENOR A 0 HUBO UN ERROR Y LO SALTAMOS
-					continue;
-				if(cfd > max) // ACTUALIZAMOS EL MAX EN CASO DE SER MAS GRANDE
-					max = cfd;
-				ids[cfd] = next++; // GUARDAR EL CFD EN IDS
-				buffer[cfd] = NULL; // LIMPIAMOS SU BUFFER
-				FD_SET(cfd, &a); // GUARDAMOS EL FD EN ACTIVOS
-				char msg[256]; // CREAMOS VARIABLE PARA GUARDAR EL MENSAJE DE BIENVENIDA
-				sprintf(msg, "server: client %d just arrived\n", ids[cfd]);
-				notify(cfd, msg); // ENVIAMOS EL MENSAJE
+    			if ((cfd = accept(sockfd, NULL, NULL)) < 0) // aceptamos
+        			continue; // hemos comprobado si es < 0. en caso de no serlo, next.
+    			if (cfd > max) 
+        			max = cfd; // actualizamos maxfd si cfd es mayor
+
+    			ids[cfd] = next++; // asignamos id
+    			buffer[cfd] = NULL; // inicializamos su buffer
+    			FD_SET(cfd, &a); // lo añadimos a active
+
+    			char msg[64]; // mensaje de bienvenida
+    			sprintf(msg, "server: client %d just arrived\n", ids[cfd]);
+    			notify(cfd, msg);
 			}
 			else // OLD CLIENT :)
 			{
